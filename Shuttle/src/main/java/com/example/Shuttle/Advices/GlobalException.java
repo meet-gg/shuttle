@@ -14,23 +14,28 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalException {
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiError> handleResourcenotfound(ResourceNotFoundException exception){
+    public ResponseEntity<ApiResponse<?>> handleResourcenotfound(ResourceNotFoundException exception){
         ApiError apiError= ApiError.builder()
                 .httpStatus(HttpStatus.NOT_FOUND)
                 .message(exception.getMessage())
                 .build();
-        return new ResponseEntity<>(apiError,HttpStatus.NOT_FOUND);
+        return ErrorResponseEntity(apiError);
     }
+
+    private ResponseEntity<ApiResponse<?>> ErrorResponseEntity(ApiError apiError) {
+            return new ResponseEntity<>(new ApiResponse<>(apiError),apiError.getHttpStatus());
+    }
+
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleServerexception(Exception exception){
+    public ResponseEntity<ApiResponse<?>> handleServerexception(Exception exception){
         ApiError apiError= ApiError.builder()
                 .httpStatus(HttpStatus.INTERNAL_SERVER_ERROR)
                 .message(exception.getMessage())
                 .build();
-        return new ResponseEntity<>(apiError,HttpStatus.INTERNAL_SERVER_ERROR);
+        return ErrorResponseEntity(apiError);
     }
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleInputvalidationerror(MethodArgumentNotValidException exception){
+    public ResponseEntity<ApiResponse<?>> handleInputvalidationerror(MethodArgumentNotValidException exception){
         List<String> errors=exception
                 .getBindingResult()
                 .getAllErrors()
@@ -42,7 +47,7 @@ public class GlobalException {
                 .message("input validation Error")
                 .otherError(errors)
                 .build();
-        return new ResponseEntity<>(apiError,HttpStatus.BAD_REQUEST);
+        return ErrorResponseEntity(apiError);
     }
 
 
